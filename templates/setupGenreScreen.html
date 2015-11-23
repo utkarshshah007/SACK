@@ -26,23 +26,16 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
-
-    <!-- Create one of these for each genre -->
     <div class="container">
-      <form method="post">
-        <div class="checkbox">
-          <label for="actionChecked"><input type="checkbox" id="actionChecked" name="actionChecked" value="action">Action</label>
-        </div>
-        <div class="checkbox">
-          <label for="adventureChecked"><input type="checkbox" id="adventureChecked" name="adventureChecked" value="adventure">Adventure</label>
-        </div>
-        <div class="checkbox disabled">
-          <label for="mysteryChecked"><input type="checkbox" id="mysteryChecked" name="mysteryChecked" value="mystery">Mystery</label>
-        </div>
+      <form method = "post">
+        {% for genre in genres %}
+          <div class="checkbox">
+            <label for={{ genre.name }}> <input type="checkbox" id={{ genre.name }} name=genre value={{ genre.value }}>{{ genre.value }}</label>
+          </div>
+        {% endfor %}
         <!-- Button to move to movie rating page -->
         <button type="submit" id="submit_genres" class="btn btn-primary">Continue</button>
       </form>
-    </div> <!-- /container -->
-
+    </div>
   </body>
 </html>

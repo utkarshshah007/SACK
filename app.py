@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request, render_template, url_for, redirect
 import json
+import cx_Oracle
 import os
 
 app = Flask(__name__)
@@ -41,21 +42,20 @@ def accept_registration():
 
 ''''''
 
+
 '''Choose-Genres Methods'''
 @app.route('/choose-genres')
 def ask_for_genres():
-    return render_template('setupGenreScreen.html')
+    query = """SELECT * FROM GENRES"""
+    results = cursor.execute(query).fetchall()
+    genres = []
+    for genre in results:
+        genres.append({'name': genre[0] + "Checked", 'value': genre[0]})
+    return render_template('setupGenreScreen.html', genres = genres)
 
 @app.route('/choose-genres', methods = ['POST'])
 def accept_genre_choices():
-    choices = []
-    if 'actionChecked' in request.form:
-        choices.append("action")
-    if 'adventureChecked' in request.form:
-        choices.append("adventure")
-    if 'mysteryChecked' in request.form:
-        choices.append("mystery")
-    print choices
+    print request.form.getlist('genre')
 
     return redirect(domain + "/setup-rating", code=302)
 
@@ -85,10 +85,31 @@ def dated_url_for(endpoint, **values):
             values['q'] = int(os.stat(file_path).st_mtime)
     return url_for(endpoint, **values)
 
+def connectToDB():
+    ip = 'cis550.cfserwqjknt5.us-east-1.rds.amazonaws.com'
+    port = 1521
+    SID = 'ORCL'
+
+    dsn_tns = cx_Oracle.makedsn(ip, port, SID)
+    global connection 
+    connection = cx_Oracle.connect('groupsack', 'sackgroup', dsn_tns)
+
+    print "connection successful"
+    global cursor 
+    cursor = connection.cursor()
+    
+
+def closeConnection():
+    cursor.close()
+    connection.close()
+    print "connection closed"
+
 def main():
     #app.debug = True
     #port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True)
+    connectToDB()
+    app.run()
+    closeConnection()
 
 if __name__ == '__main__':
     main()
