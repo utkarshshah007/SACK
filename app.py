@@ -61,13 +61,24 @@ def accept_genre_choices():
 
 ''''''
 
-'''Choose-Genres Methods'''
+'''setup-rating Methods'''
 @app.route('/setup-rating')
 def ask_for_setup_ratings():
     return render_template('setupRatingScreen.html')
 
 @app.route('/setup-rating', methods = ['POST'])
 def accept_setup_ratings():
+    pass
+
+''''''
+
+'''setup-rating Methods'''
+@app.route('/suggestions')
+def suggest_movies():
+    return render_template('suggestMovies.html')
+
+@app.route('/suggestions', methods = ['POST'])
+def suggest_movies_post():
     pass
 
 ''''''
