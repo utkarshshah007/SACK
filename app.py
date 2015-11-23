@@ -28,7 +28,7 @@ def accept_login():
     results = cursor.execute(query).fetchone()
     curruserid = results[0]
 
-    return redirect(domain + "/choose-genres", code=302)
+    return redirect(domain + "/suggestions", code=302)
 
 ''''''
 
@@ -86,11 +86,13 @@ def ask_for_setup_ratings():
 
 @app.route('/setup-rating', methods = ['POST'])
 def accept_setup_ratings():
-    pass
+    print request.form
+    return "/suggestions";
+
 
 ''''''
 
-'''setup-rating Methods'''
+'''Suggestions Methods'''
 @app.route('/suggestions')
 def suggest_movies():
     return render_template('suggestMovies.html')
