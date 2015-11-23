@@ -26,6 +26,7 @@ def accept_login():
     query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
     print "query: " + query
     results = cursor.execute(query).fetchone()
+    global curruserid
     curruserid = results[0]
 
     return redirect(domain + "/suggestions", code=302)
@@ -46,6 +47,7 @@ def accept_registration():
 
     query = """SELECT MAX(userid) FROM USERS"""
     result = cursor.execute(query).fetchone()
+    global curruserid
     curruserid = result[0] + 1
     query = """INSERT INTO USERS (email, userid) 
             VALUES (\'""" + email + """', """ + str(curruserid) + """)"""
@@ -95,7 +97,13 @@ def accept_setup_ratings():
 '''Suggestions Methods'''
 @app.route('/suggestions')
 def suggest_movies():
-    return render_template('suggestMovies.html')
+    query = """SELECT gname FROM Prefer P
+            INNER JOIN Users U ON U.userid = P.userid
+            WHERE U.userid = """ + str(curruserid)
+    results = cursor.execute(query).fetchall()
+    genres = [x[0] for x in results]
+
+    return render_template('suggestMovies.html', genres = genres[1:], first_genre = genres[0])
 
 @app.route('/suggestions', methods = ['POST'])
 def suggest_movies_post():
