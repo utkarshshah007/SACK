@@ -5,6 +5,7 @@ import os
 
 app = Flask(__name__)
 domain = "http://127.0.0.1:5000"
+curruserid = 0
 
 @app.route('/')
 def home():
@@ -22,6 +23,11 @@ def accept_login():
     password = request.form['inputPassword']
     print password
 
+    query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
+    print "query: " + query
+    results = cursor.execute(query).fetchone()
+    curruserid = results[0]
+
     return redirect(domain + "/choose-genres", code=302)
 
 ''''''
@@ -38,6 +44,17 @@ def accept_registration():
     password = request.form['password']
     print password
 
+    query = """SELECT MAX(userid) FROM USERS"""
+    result = cursor.execute(query).fetchone()
+    curruserid = result[0] + 1
+    query = """INSERT INTO USERS (email, userid) 
+            VALUES (\'""" + email + """', """ + str(curruserid) + """)"""
+    try:
+        cursor.execute(query)
+        connection.commit()
+    except cx_Oracle.IntegrityError:
+        error = "Please use a different email. That email has already been registered."
+        return render_template('registerPage.html', error = error)
     return redirect(domain + "/choose-genres", code=302)
 
 ''''''
@@ -55,6 +72,7 @@ def ask_for_genres():
 
 @app.route('/choose-genres', methods = ['POST'])
 def accept_genre_choices():
+    print request.form
     print request.form.getlist('genre')
 
     return redirect(domain + "/setup-rating", code=302)
