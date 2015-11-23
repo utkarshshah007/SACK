@@ -25,6 +25,22 @@ def accept_login():
 
 ''''''
 
+''' Signup Methods '''
+@app.route('/register')
+def register():
+    return render_template('registerPage.html')
+
+@app.route('/register', methods = ['POST'])
+def accept_registration():
+    email = request.form['email']
+    print email
+    password = request.form['password']
+    print password
+
+    return redirect(domain + "/choose-genres", code=302)
+
+''''''
+
 '''Choose-Genres Methods'''
 @app.route('/choose-genres')
 def ask_for_genres():
