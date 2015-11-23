@@ -28,16 +28,39 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='bootstrap-slider.js') }}"></script>
     <script src="{{ url_for('static', filename='setupRatingScreen.js') }}"></script>
+    <div class="container">
+        <h3>Genre Name</h3>
+        <!-- Create one of these for each of the 5 movies in each of the chosen genres -->
+        <div class="row">
+            <h4>Movie 1</h4>
+            <input id="movie1" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        </div>
 
+        <div class="row">
+            <h4>Movie 2</h4>
+            <input id="movie2" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        </div>
 
-    <!-- Create one of these for each of the 5 movies in each of the chosen genres -->
-    <h4>Movie 1</h4>
-    <input id="movie1" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        <div class="row">
+            <h4>Movie 3</h4>
+            <input id="movie3" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        </div>
 
-    <h4>Movie 2</h4>
-    <input id="movie2" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        <div class="row">
+            <h4>Movie 4</h4>
+            <input id="movie4" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        </div>
 
-    <button id="submitButton">Submit Ratings</button>
+        <div class="row">
+            <h4>Movie 5</h4>
+            <input id="movie5" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+        </div>
+
+        <div class="row" style="margin-top:10px">
+            <button class="btn btn-lg btn-primary" id="submitButton">Submit Ratings</button>
+        </div>
+
+    </div>
 
   </body>
 </html>
