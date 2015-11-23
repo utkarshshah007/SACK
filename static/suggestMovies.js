@@ -8,7 +8,10 @@ $(function(){
 		console.log(outdata);
 
 		$.post("suggestions", outdata, function (data) {
-    		console.log("SUCCESS");
+
+    		$("#movieYear").text(data["year"]);
+    		$("#movieName").text(data["title"]);
+
     	});
 	});
 });
