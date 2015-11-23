@@ -24,7 +24,6 @@ def accept_login():
     print password
 
     query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
-    print "query: " + query
     results = cursor.execute(query).fetchone()
     global curruserid
     curruserid = results[0]
@@ -107,7 +106,48 @@ def suggest_movies():
 
 @app.route('/suggestions', methods = ['POST'])
 def suggest_movies_post():
-    pass
+    genre = request.form.getlist('genre')[0]
+    query = """WITH fav_movies AS
+            (SELECT M.mid
+            FROM movies M
+            INNER JOIN rate R ON M.mid = R.mid
+            WHERE R.userid = """ + str(curruserid) + """ AND R.rating >= 3),
+            sim_users AS
+            (SELECT userid
+            FROM rate R
+            INNER JOIN fav_movies M ON M.mid = R.mid
+            WHERE R.rating >= 3
+            GROUP BY userid
+            HAVING count(rating) >= 3),
+            movies_not_seen AS
+            ((SELECT M.mid
+              FROM Movies M)
+              MINUS
+            (SELECT M.mid
+             FROM Movies M
+             INNER JOIN Rate R ON R.mid = M.mid
+             WHERE R.userid = """ + str(curruserid) + """)),
+            suggested_movies AS
+            (SELECT M.mid, avg(R.rating) AS avgRating
+            FROM movies_not_seen M
+            INNER JOIN Rate R ON R.mid = M.mid
+            INNER JOIN sim_users U ON U.userid = R.userid
+            INNER JOIN PartOf P ON P.mid = M.mid
+            WHERE P.gname = '""" + genre + """'
+            GROUP BY M.mid)
+            SELECT mid
+            FROM suggested_movies 
+            WHERE avgRating >= ALL (SELECT avgRating FROM suggested_movies)"""
+    mid = cursor.execute(query).fetchone()[0]
+    query = """SELECT title, year, avgRating
+               FROM Movies 
+               WHERE mid = """ + str(mid)
+    result = cursor.execute(query).fetchone()
+    print result
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2])
+
+
+
 
 ''''''
 
