@@ -53,6 +53,7 @@ def accept_registration():
     try:
         cursor.execute(query)
         connection.commit()
+        print "new user created"
     except cx_Oracle.IntegrityError:
         error = "Please use a different email. That email has already been registered."
         return render_template('registerPage.html', error = error)
@@ -73,9 +74,12 @@ def ask_for_genres():
 
 @app.route('/choose-genres', methods = ['POST'])
 def accept_genre_choices():
-    print request.form
-    print request.form.getlist('genre')
-
+    genres = request.form.getlist('genre')
+    for genre in genres:
+        insert = """INSERT INTO Prefer (gname, userid)
+                 VALUES (\'""" + genre +"""',""" + str(curruserid) +""")"""
+        cursor.execute(insert)
+    connection.commit()
     return redirect(domain + "/setup-rating", code=302)
 
 ''''''
@@ -83,11 +87,39 @@ def accept_genre_choices():
 '''setup-rating Methods'''
 @app.route('/setup-rating')
 def ask_for_setup_ratings():
-    return render_template('setupRatingScreen.html')
+    
+    query = """SELECT gname
+            FROM Prefer P
+            INNER JOIN Users U ON U.userid = P.userid
+            WHERE U.userid = """ + str(curruserid)
+    results = cursor.execute(query).fetchall()
+    genres = [genre[0] for genre in results]
+    movies_to_rate = []
+    for genre in genres:
+        query = """ SELECT M.mid, M.title
+                    FROM Movies M
+                    INNER JOIN PartOf P ON P.mid = M.mid
+                    WHERE P.gname = \'""" + genre + """'"""
+        results = cursor.execute(query).fetchmany(numRows=5)
+        genre_movie = {}
+        genre_movie['genre'] = genre
+        movies = []
+        for movie in results:
+            movies.append({'id': movie[0], 'title': movie[1]})
+        genre_movie['movies'] = movies
+        movies_to_rate.append(genre_movie)
+    return render_template('setupRatingScreen.html', genres = movies_to_rate)
 
 @app.route('/setup-rating', methods = ['POST'])
 def accept_setup_ratings():
-    print request.form
+    for mid in request.form.keys():
+        rating = request.form.getlist(mid)[0]
+
+        insert = """ INSERT INTO Rate (mid, rating, userid)
+                     VALUES (""" + str(mid) + """, """ + str(rating) + """, 
+                     """ + str(curruserid) + """)"""
+        cursor.execute(insert)
+    connection.commit()
     return "/suggestions";
 
 
