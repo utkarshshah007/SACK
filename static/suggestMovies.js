@@ -26,4 +26,20 @@ $(function(){
 
     	});
 	});
+
+	$("#movieName").click(function() {
+		var name = $("#movieName").text().split(" ");
+
+		
+		var url = "https://www.bing.com/search?q=";
+		var s;
+		for (s in name) {
+			url += name[s] + "+";
+		}
+		url += "trailer"
+
+		window.location.href = url;
+
+	});
+
 });
