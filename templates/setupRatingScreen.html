@@ -29,15 +29,15 @@
     <script src="{{ url_for('static', filename='bootstrap-slider.js') }}"></script>
     <script src="{{ url_for('static', filename='setupRatingScreen.js') }}"></script>
 
-    {% for genre in genres %}
+    {%for genre in genres %}
         <div class="container " {{ genre.genre }}>
             <h3>{{ genre.genre }}</h3>
             {% for movie in genre.movies %}
                 <div class="row">
-                    <h4>{{ movie.title }}</h4>
+                    <h4 class="movie-title">{{ movie.title }}</h4>
                     <input class="movie-slider" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3" id={{ movie.id }}>
+                    <button class='NSBut'>Have not Seen Before</button>
                 </div>
-                <button>Have not Seen Before</button>
             {% endfor %}
         </div>
     {% endfor %}

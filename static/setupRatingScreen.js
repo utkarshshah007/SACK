@@ -1,6 +1,10 @@
 $(function(){
 	$('.movie-slider').slider();
 
+    $('.NSBut').click(function(){
+		$(this).parent().find('.movie-title').text("New title");
+	});
+
 	$('#submitButton').click(function(){
 		outdata = {};
 
@@ -11,6 +15,8 @@ $(function(){
 	    $.post("setup-rating", 	outdata, function (data) {
 	    	window.location.href = data;
 	    });
+
+
 	});
 });
 
