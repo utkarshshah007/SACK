@@ -7,6 +7,9 @@ import time
 app = Flask(__name__)
 domain = "http://127.0.0.1:5000"
 curruserid = 0
+to_rate = {}
+idx_rate = {}
+will_rate = set([])
 
 @app.route('/')
 def home():
@@ -83,28 +86,60 @@ def accept_genre_choices():
     connection.commit()
     return redirect(domain + "/setup-rating", code=302)
 
+
+def get_movies_to_rate(genre, num):
+    all_movies = to_rate[genre]
+    idx = idx_rate[genre]
+
+    movies = []
+    orig_idx = idx
+    temp_idx = idx
+    while idx < (orig_idx + num):
+        movie = all_movies[temp_idx]
+        if movie not in will_rate:
+            will_rate.add(movie)
+            movies.append(movie)
+            idx += 1
+        temp_idx += 1
+    idx_rate[genre] = idx
+    return movies
+
+
 ''''''
 
 '''setup-rating Methods'''
 @app.route('/setup-rating')
 def ask_for_setup_ratings():
-    
+    # get all genres to rate
     query = """SELECT gname
             FROM Prefer P
             INNER JOIN Users U ON U.userid = P.userid
             WHERE U.userid = """ + str(curruserid)
     results = cursor.execute(query).fetchall()
     genres = [genre[0] for genre in results]
+
     movies_to_rate = []
     for genre in genres:
+        # get 50 movies/titles to rate in this genre
         query = """ SELECT M.mid, M.title
                     FROM Movies M
                     INNER JOIN PartOf P ON P.mid = M.mid
                     WHERE P.gname = \'""" + genre + """' 
                     ORDER BY M.countRatings DESC"""
         results = cursor.execute(query).fetchmany(numRows=50)
-        first_choice_movies = results[0:5]
-        backup_movies = results[5:]
+        
+        # pull out 5 movies for the user to rate
+        to_rate[genre] = results
+        idx_rate[genre] = 0
+        first_choice_movies = get_movies_to_rate(genre, 5)
+        backup_movies = []
+        
+        #backup_movies = get_movies_to_rate(genre, 5)
+        #first_choice_movies = results[0:5]
+        #will_rate.union(set(first_choice_movies))
+        #backup_movies = results[5:]
+
+        # format them so that we can use it in the template
         genre_movie = {}
         genre_movie['genre'] = genre
         movies = []
