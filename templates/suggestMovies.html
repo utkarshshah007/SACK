@@ -16,6 +16,7 @@
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='shop-item.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='suggestMovies.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap-slider.css') }}" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -35,7 +36,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
     <script src="{{ url_for('static', filename='suggestMovies.js') }}"></script>
-
+    <script src="{{ url_for('static', filename='bootstrap-slider.js') }}"></script>
     <!-- Page Content -->
     <div class="container">
 
@@ -44,9 +45,9 @@
             <div class="col-md-3">
                 <p class="lead">Genres</p>
                 <div class="list-group">
-                    <a href="#" class="list-group-item active">{{ first_genre }}</a>
+                    <a href="#" class="list-group-item active" id={{ first_genre }}>{{ first_genre }}</a>
                 {% for genre in genres %}
-                    <a href="#" class="list-group-item">{{ genre }}</a>
+                    <a href="#" class="list-group-item" id={{ genre }}>{{ genre }}</a>
                 {% endfor %}
             </div>
             </div>
@@ -71,7 +72,7 @@
 
                     
                     <h5>Rate this movie to get a new one!</h5>
-                    <input class="movie-slider" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3">
+                    <input class="movie-slider" type="text" data-slider-min="1" data-slider-max="5" data-slider-step="1" data-slider-value="3" id="id" genre="genre">
                     <button class="btn btn-sm btn-primary" id="submitButton">Submit Rating</button>
                     <button class="btn btn-sm btn-primary" style="float: right" id="submitButton">Show Me Another Movie</button>
                 </div>

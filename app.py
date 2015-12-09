@@ -112,8 +112,7 @@ def get_next_movie():
     movie = {}
     movie['mid'] = mid
     movie['movie_title'] = title
-    json_movie = jsonify(movie)
-    return json_movie
+    return jsonify(movie)
 
 
 ''''''
@@ -155,18 +154,37 @@ def ask_for_setup_ratings():
         movies_to_rate.append(genre_movie)
     return render_template('setupRatingScreen.html', genres = movies_to_rate)
 
+
+''''''
+'''Insert Rating in DB. Dont forget to commit later'''
+def insert_rating(mid, rating):
+    insert = """ INSERT INTO Rate (mid, rating, userid)
+                     VALUES (""" + str(mid) + """, """ + str(rating) + """, 
+                     """ + str(curruserid) + """)"""
+    # TODO: Update average rating of movie
+    cursor.execute(insert)
+
+
 @app.route('/setup-rating', methods = ['POST'])
 def accept_setup_ratings():
     for mid in request.form.keys():
         rating = request.form.getlist(mid)[0]
-
-        insert = """ INSERT INTO Rate (mid, rating, userid)
-                     VALUES (""" + str(mid) + """, """ + str(rating) + """, 
-                     """ + str(curruserid) + """)"""
-        cursor.execute(insert)
+        insert_rating(mid, rating)
+        
     connection.commit()
-    return "/suggestions";
+    return "/suggestions"
 
+
+@app.route('/suggestions/rate-movie', methods = ['POST'])
+def rate_movie():
+    mid = request.form['mid']
+    rating = request.form['rating']
+    genre = request.form['genre']
+    
+    insert_rating(mid, rating)
+    connection.commit()
+    data = {'genre': genre}
+    return jsonify(data)
 
 ''''''
 
@@ -226,12 +244,12 @@ def suggest_movies_post():
     mid = cursor.execute(query).fetchone()[0]
     end_time = time.time()
     print ("time: " + str(end_time - start_time))
-    query = """SELECT title, year, avgRating, countRatings
+    query = """SELECT title, year, avgRating, countRatings, mid
                FROM Movies 
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
     print result
-    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3])
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3], mid=result[4], genre=genre)
 
 
 

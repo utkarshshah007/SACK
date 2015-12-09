@@ -1,4 +1,5 @@
 $(function(){
+	$('.movie-slider').slider();
 
 	var load_movie = function(outdata) {
 		$.post("suggestions", outdata, function (data) {
@@ -8,6 +9,8 @@ $(function(){
 	    		$("#movieReviews").text(data["num_ratings"] + " reviews");
 	    		$(".loading-movies").addClass("hide");
 	    		$(".suggested-movie").removeClass("hide");
+	    		$(".movie-slider").attr('id', data["mid"]);
+	    		$(".movie-slider").attr('genre', data["genre"]);
 
 	    		// Updating Stars
 	    		$(".stars").html("");
@@ -20,7 +23,6 @@ $(function(){
 	    			}	
 	    		};
 	    		$(".stars").append(" " + (Math.round(data["avg_rating"] * 100) / 100) + " stars")
-
 	    });
 	}
 
@@ -56,6 +58,16 @@ $(function(){
 
 		window.location.href = url;
 
+	});
+
+	$('#submitButton').click(function(){
+		var outdata = {};
+		outdata['mid'] = $(this).parent().find(".movie-slider").attr('id');
+		outdata['rating'] = $(this).parent().find(".movie-slider").slider('getValue');
+		outdata['genre'] = $(this).parent().find(".movie-slider").attr('genre');
+	    $.post("suggestions/rate-movie", outdata, function (data) {
+	    	$('#' + data.genre).click();
+	    });
 	});
 
 });

@@ -24,8 +24,6 @@ $(function(){
 	    $.post("setup-rating", 	outdata, function (data) {
 	    	window.location.href = data;
 	    });
-
-
 	});
 });
 
