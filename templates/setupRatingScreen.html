@@ -30,7 +30,7 @@
     <script src="{{ url_for('static', filename='setupRatingScreen.js') }}"></script>
 
     {%for genre in genres %}
-        <div class="container " {{ genre.genre }}>
+        <div class="container" id={{ genre.genre }}>
             <h3>{{ genre.genre }}</h3>
             {% for movie in genre.movies %}
                 <div class="row">

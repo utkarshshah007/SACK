@@ -2,11 +2,20 @@ $(function(){
 	$('.movie-slider').slider();
 
     $('.NSBut').click(function(){
-		$(this).parent().find('.movie-title').text("New title");
+    	var genre = $(this).closest(".container").attr('id')
+    	var outdata = {};
+    	outdata['genre'] = genre;
+    	var $curr = $(this)
+
+    	$.post("setup-rating/get-next-movie", outdata, function (data) {
+	    	$curr.parent().find('.movie-title').text(data.movie_title);
+			$curr.parent().find('.movie-slider').attr('id', data.mid);
+	    });
+		
 	});
 
 	$('#submitButton').click(function(){
-		outdata = {};
+		var outdata = {};
 
 		$('.movie-slider').each( function(index) {
 			outdata[$(this).attr('id')] = $(this).slider('getValue');

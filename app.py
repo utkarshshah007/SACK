@@ -105,6 +105,17 @@ def get_movies_to_rate(genre, num):
     return movies
 
 
+@app.route('/setup-rating/get-next-movie', methods = ['POST'])
+def get_next_movie():
+    genre = request.form['genre']
+    mid, title = get_movies_to_rate(genre, 1)[0]
+    movie = {}
+    movie['mid'] = mid
+    movie['movie_title'] = title
+    json_movie = jsonify(movie)
+    return json_movie
+
+
 ''''''
 
 '''setup-rating Methods'''
@@ -115,6 +126,7 @@ def ask_for_setup_ratings():
             FROM Prefer P
             INNER JOIN Users U ON U.userid = P.userid
             WHERE U.userid = """ + str(curruserid)
+
     results = cursor.execute(query).fetchall()
     genres = [genre[0] for genre in results]
 
@@ -132,24 +144,14 @@ def ask_for_setup_ratings():
         to_rate[genre] = results
         idx_rate[genre] = 0
         first_choice_movies = get_movies_to_rate(genre, 5)
-        backup_movies = []
-        
-        #backup_movies = get_movies_to_rate(genre, 5)
-        #first_choice_movies = results[0:5]
-        #will_rate.union(set(first_choice_movies))
-        #backup_movies = results[5:]
 
         # format them so that we can use it in the template
         genre_movie = {}
         genre_movie['genre'] = genre
         movies = []
-        backups = []
         for movie in first_choice_movies:
             movies.append({'id': movie[0], 'title': movie[1]})
-        for movie in backup_movies:
-            backups.append({'id': movie[0], 'title': movie[1]})
         genre_movie['movies'] = movies
-        genre_movie['backups'] = backups
         movies_to_rate.append(genre_movie)
     return render_template('setupRatingScreen.html', genres = movies_to_rate)
 
