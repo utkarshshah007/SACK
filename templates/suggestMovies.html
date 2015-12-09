@@ -9,12 +9,13 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Shop Item - Start Bootstrap Template</title>
+    <title>Suggested Movies</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
     <!-- Custom CSS -->
-   <!-- <link href="{{ url_for('static', filename='shop-item.css') }}" rel="stylesheet"> -->
+    <link href="{{ url_for('static', filename='shop-item.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='suggestMovies.css') }}" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -33,8 +34,13 @@
     <!-- Bootstrap Core JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
+<<<<<<< 6d95b55853b96be09ef281a9bcab0f25c43e3349
     <script src="{{ url_for('static', filename='suggestMovies.js') }}"></script> 
 
+=======
+    <script src="{{ url_for('static', filename='suggestMovies.js') }}"></script>
+   
+>>>>>>> loading icon, useless I havent seen it yet button, minor improvements to suggest movies query
     <!-- Page Content -->
     <div class="container">
 
@@ -51,8 +57,10 @@
             </div>
 
             <div class="col-md-9">
-
-                <div class="thumbnail">
+                <div class="loading-movies container">
+                    <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span> Loading...
+                </div>
+                <div class="thumbnail suggested-movie hide">
                     <img class="img-responsive" src="http://placehold.it/800x300" alt="">
                     <div class="caption-full">
                         <h4 class="pull-right" id="movieYear">2003</h4>
@@ -61,7 +69,7 @@
                         </h4>
                     </div>
                     <div class="ratings">
-                        <p class="pull-right">3 reviews</p>
+                        <p class="pull-right" id="movieReviews">3 reviews</p>
                         <p>
                             <span class="glyphicon glyphicon-star"></span>
                             <span class="glyphicon glyphicon-star"></span>
@@ -74,6 +82,7 @@
                 </div>
 
             </div>
+
 
         </div>
 

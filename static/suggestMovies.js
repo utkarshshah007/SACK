@@ -7,14 +7,19 @@ $(function(){
 
 	    		$("#movieYear").text(data["year"]);
 	    		$("#movieName").text(data["title"]);
+	    		$("#movieReviews").text(data["num_ratings"] + " reviews");
+	    		$(".loading-movies").addClass("hide");
+	    		$(".suggested-movie").removeClass("hide");
 
 	    });
 	});
 
 
 	$(".list-group-item").click(function() {
-		$(".list-group-item").removeClass("active")
-		$(this).addClass("active")
+		$(".list-group-item").removeClass("active");
+		$(this).addClass("active");
+		$(".suggested-movie").addClass("hide");
+		$(".loading-movies").removeClass("hide");
 
 		var outdata = {};
 		outdata['genre'] = $(this).text();
@@ -23,6 +28,8 @@ $(function(){
 
     		$("#movieYear").text(data["year"]);
     		$("#movieName").text(data["title"]);
+    		$(".loading-movies").addClass("hide");
+    		$(".suggested-movie").removeClass("hide");
 
     	});
 	});
