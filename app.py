@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template, url_for, redirect
 import json
 import cx_Oracle
 import os
+import time
 
 app = Flask(__name__)
 domain = "http://127.0.0.1:5000"
@@ -99,14 +100,21 @@ def ask_for_setup_ratings():
         query = """ SELECT M.mid, M.title
                     FROM Movies M
                     INNER JOIN PartOf P ON P.mid = M.mid
-                    WHERE P.gname = \'""" + genre + """'"""
-        results = cursor.execute(query).fetchmany(numRows=5)
+                    WHERE P.gname = \'""" + genre + """' 
+                    ORDER BY M.countRatings DESC"""
+        results = cursor.execute(query).fetchmany(numRows=50)
+        first_choice_movies = results[0:5]
+        backup_movies = results[5:]
         genre_movie = {}
         genre_movie['genre'] = genre
         movies = []
-        for movie in results:
+        backups = []
+        for movie in first_choice_movies:
             movies.append({'id': movie[0], 'title': movie[1]})
+        for movie in backup_movies:
+            backups.append({'id': movie[0], 'title': movie[1]})
         genre_movie['movies'] = movies
+        genre_movie['backups'] = backups
         movies_to_rate.append(genre_movie)
     return render_template('setupRatingScreen.html', genres = movies_to_rate)
 
@@ -140,43 +148,53 @@ def suggest_movies():
 def suggest_movies_post():
     genre = request.form.getlist('genre')[0]
     query = """WITH fav_movies AS
-            (SELECT M.mid
-            FROM movies M
-            INNER JOIN rate R ON M.mid = R.mid
-            WHERE R.userid = """ + str(curruserid) + """ AND R.rating >= 3),
+                (SELECT M.mid
+                FROM movies M
+                INNER JOIN rate R ON M.mid = R.mid
+                INNER JOIN PartOf P ON M.mid = P.mid
+                WHERE R.userid = """ + str(curruserid) + """ 
+                AND R.rating >= 3 
+                AND P.gname = '""" + genre + """'),
             sim_users AS
-            (SELECT userid
-            FROM rate R
-            INNER JOIN fav_movies M ON M.mid = R.mid
-            WHERE R.rating >= 3
-            GROUP BY userid
-            HAVING count(rating) >= 3),
+                (SELECT userid
+                FROM rate R
+                INNER JOIN fav_movies M ON M.mid = R.mid
+                WHERE R.rating >= 3
+                GROUP BY userid
+                HAVING count(rating) >= 3),
             movies_not_seen AS
-            ((SELECT M.mid
-              FROM Movies M)
-              MINUS
-            (SELECT M.mid
-             FROM Movies M
-             INNER JOIN Rate R ON R.mid = M.mid
-             WHERE R.userid = """ + str(curruserid) + """)),
+                ((SELECT M.mid
+                  FROM Movies M
+                  INNER JOIN PartOf P ON P.mid = M.mid
+                  WHERE P.gname = '""" + genre + """')
+                  MINUS
+                (SELECT M.mid
+                 FROM Movies M
+                 INNER JOIN Rate R ON R.mid = M.mid
+                 INNER JOIN PartOf P ON P.mid = M.mid
+                 WHERE P.gname = '""" + genre + """'
+                 AND R.userid = """ + str(curruserid) + """)),
             suggested_movies AS
-            (SELECT M.mid, avg(R.rating) AS avgRating
-            FROM movies_not_seen M
-            INNER JOIN Rate R ON R.mid = M.mid
-            INNER JOIN sim_users U ON U.userid = R.userid
-            INNER JOIN PartOf P ON P.mid = M.mid
-            WHERE P.gname = '""" + genre + """'
-            GROUP BY M.mid)
+                (SELECT M.mid, avg(R.rating) AS avgRating
+                FROM movies_not_seen M
+                INNER JOIN Rate R ON R.mid = M.mid
+                INNER JOIN sim_users U ON U.userid = R.userid
+                INNER JOIN PartOf P ON P.mid = M.mid
+                WHERE P.gname = '""" + genre + """'
+                GROUP BY M.mid)
             SELECT mid
             FROM suggested_movies 
             WHERE avgRating >= ALL (SELECT avgRating FROM suggested_movies)"""
+    start_time = time.time()
     mid = cursor.execute(query).fetchone()[0]
-    query = """SELECT title, year, avgRating
+    end_time = time.time()
+    print ("time: " + str(end_time - start_time))
+    query = """SELECT title, year, avgRating, countRatings
                FROM Movies 
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
     print result
-    return jsonify(title=result[0], year=result[1], avg_rating=result[2])
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3])
 
 
 
