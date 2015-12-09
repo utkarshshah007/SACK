@@ -1,9 +1,7 @@
 $(function(){
 
-	$(document).ready(function() {
-		var firstdata = {};
-		firstdata['genre'] = $('.active').text();
-		$.post("suggestions", firstdata, function (data) {
+	var load_movie = function(outdata) {
+		$.post("suggestions", outdata, function (data) {
 
 	    		$("#movieYear").text(data["year"]);
 	    		$("#movieName").text(data["title"]);
@@ -12,6 +10,12 @@ $(function(){
 	    		$(".suggested-movie").removeClass("hide");
 
 	    });
+	}
+
+	$(document).ready(function() {
+		var firstdata = {};
+		firstdata['genre'] = $('.active').text();
+		load_movie(firstdata);
 	});
 
 
@@ -24,14 +28,7 @@ $(function(){
 		var outdata = {};
 		outdata['genre'] = $(this).text();
 
-		$.post("suggestions", outdata, function (data) {
-
-    		$("#movieYear").text(data["year"]);
-    		$("#movieName").text(data["title"]);
-    		$(".loading-movies").addClass("hide");
-    		$(".suggested-movie").removeClass("hide");
-
-    	});
+		load_movie(outdata);
 	});
 
 	$("#movieName").click(function() {
