@@ -9,6 +9,18 @@ $(function(){
 	    		$(".loading-movies").addClass("hide");
 	    		$(".suggested-movie").removeClass("hide");
 
+	    		// Updating Stars
+	    		$(".stars").html("");
+	    		var rating = Math.round(data["avg_rating"]);
+	    		for (var i = 0; i < 5; i++) {
+	    			if (i < rating) {
+	    				$(".stars").append("<span class='glyphicon glyphicon-star'></span>");
+	    			} else {
+	    				$(".stars").append("<span class='glyphicon glyphicon-star-empty'></span>");
+	    			}	
+	    		};
+	    		$(".stars").append(" " + (Math.round(data["avg_rating"] * 100) / 100) + " stars")
+
 	    });
 	}
 
