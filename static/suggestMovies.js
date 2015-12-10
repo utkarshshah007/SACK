@@ -60,13 +60,22 @@ $(function(){
 
 	});
 
-	$('#submitButton').click(function(){
+	$('#rate').click(function(){
 		var outdata = {};
 		outdata['mid'] = $(this).parent().find(".movie-slider").attr('id');
 		outdata['rating'] = $(this).parent().find(".movie-slider").slider('getValue');
 		outdata['genre'] = $(this).parent().find(".movie-slider").attr('genre');
 	    $.post("suggestions/rate-movie", outdata, function (data) {
 	    	$('#' + data.genre).click();
+	    });
+	});
+
+	$('#new-suggestion').click(function(){
+		var outdata = {};
+		outdata['mid'] = $(this).parent().find(".movie-slider").attr('id');
+		outdata['genre'] = $(this).parent().find(".movie-slider").attr('genre');
+	    $.post("suggestions/get-new-suggestion", outdata, function (data) {
+	        $('#' + data.genre).click();
 	    });
 	});
 

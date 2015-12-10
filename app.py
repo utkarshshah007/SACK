@@ -186,6 +186,18 @@ def rate_movie():
     data = {'genre': genre}
     return jsonify(data)
 
+
+@app.route('/suggestions/get-new-suggestion', methods = ['POST'])
+def get_new_suggestion():
+    mid = request.form['mid']
+    genre = request.form['genre']
+    insert = """ INSERT INTO Skip (userid, mid)
+                     VALUES (""" + str(curruserid) + """, """ + str(mid) + """)"""
+    cursor.execute(insert)
+    connection.commit()
+    data = {'genre': genre}
+    return jsonify(data)
+
 ''''''
 
 '''Suggestions Methods'''
@@ -224,12 +236,16 @@ def suggest_movies_post():
                   WHERE P.gname = '""" + genre + """'
                   AND M.avgRating > 3.5)
                   MINUS
-                (SELECT M.mid
+                ((SELECT M.mid
                  FROM Movies M
                  INNER JOIN Rate R ON R.mid = M.mid
                  INNER JOIN PartOf P ON P.mid = M.mid
                  WHERE P.gname = '""" + genre + """'
-                 AND R.userid = """ + str(curruserid) + """))
+                 AND R.userid = """ + str(curruserid) + """)
+                  UNION
+                 (SELECT mid
+                  FROM Skip
+                  WHERE userid = """ + str(curruserid) + """)))
             SELECT M.mid
                 FROM movies_not_seen M
                 INNER JOIN Rate R ON R.mid = M.mid
