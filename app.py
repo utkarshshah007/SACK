@@ -281,13 +281,15 @@ def dated_url_for(endpoint, **values):
             values['q'] = int(os.stat(file_path).st_mtime)
     return url_for(endpoint, **values)
 
+
+@app.before_request
 def connectToDB():
     ip = 'cis550.cfserwqjknt5.us-east-1.rds.amazonaws.com'
     port = 1521
     SID = 'ORCL'
-
+    
     dsn_tns = cx_Oracle.makedsn(ip, port, SID)
-    global connection 
+    global connection
     connection = cx_Oracle.connect('groupsack', 'sackgroup', dsn_tns)
 
     print "connection successful"
@@ -295,17 +297,18 @@ def connectToDB():
     cursor = connection.cursor()
     
 
-def closeConnection():
+@app.teardown_request
+def closeConnection(exp):
+    if exp:
+        print "There was an exception!"
+        raise exp
+
+    print "closing connection"
     cursor.close()
     connection.close()
-    print "connection closed"
 
 def main():
-    #app.debug = True
-    #port = int(os.environ.get("PORT", 5000))
-    connectToDB()
     app.run()
-    closeConnection()
 
 if __name__ == '__main__':
     main()
