@@ -83,7 +83,7 @@ $(document).ready(function() {
      outdata['inputPassword'] = "blah";
 
 
-     $.post("login", outdata, function (data) {
+     $.post("loginfb", outdata, function (data) {
      	console.log("Got Here")
      	window.location.href = data;
      });
