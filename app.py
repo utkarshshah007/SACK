@@ -214,32 +214,28 @@ def suggest_movies_post():
                 (SELECT userid
                 FROM rate R
                 INNER JOIN fav_movies M ON M.mid = R.mid
-                WHERE R.rating >= 3
+                WHERE R.rating >= 4
                 GROUP BY userid
                 HAVING count(rating) >= 3),
             movies_not_seen AS
                 ((SELECT M.mid
                   FROM Movies M
                   INNER JOIN PartOf P ON P.mid = M.mid
-                  WHERE P.gname = '""" + genre + """')
+                  WHERE P.gname = '""" + genre + """'
+                  AND M.avgRating > 3.5)
                   MINUS
                 (SELECT M.mid
                  FROM Movies M
                  INNER JOIN Rate R ON R.mid = M.mid
                  INNER JOIN PartOf P ON P.mid = M.mid
                  WHERE P.gname = '""" + genre + """'
-                 AND R.userid = """ + str(curruserid) + """)),
-            suggested_movies AS
-                (SELECT M.mid, avg(R.rating) AS avgRating
+                 AND R.userid = """ + str(curruserid) + """))
+            SELECT M.mid
                 FROM movies_not_seen M
                 INNER JOIN Rate R ON R.mid = M.mid
                 INNER JOIN sim_users U ON U.userid = R.userid
-                INNER JOIN PartOf P ON P.mid = M.mid
-                WHERE P.gname = '""" + genre + """'
-                GROUP BY M.mid)
-            SELECT mid
-            FROM suggested_movies 
-            WHERE avgRating >= ALL (SELECT avgRating FROM suggested_movies)"""
+                GROUP BY M.mid
+                ORDER BY avg(R.rating) DESC"""
     start_time = time.time()
     mid = cursor.execute(query).fetchone()[0]
     end_time = time.time()
