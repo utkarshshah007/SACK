@@ -3,6 +3,9 @@ import json
 import cx_Oracle
 import os
 import time
+import urllib
+from base64 import b64encode
+import requests
 
 app = Flask(__name__)
 domain = "http://127.0.0.1:5000"
@@ -280,10 +283,10 @@ def suggest_movies_post():
                FROM Movies 
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
-    print result
-    #picture = get_picture(result[0] + " movie poster")
-    #print picture
-    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3])
+    print result[0]
+    picture = get_picture(result[0] + " movie poster")
+    print picture
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3], mid=result[4], genre=genre, picture = picture)
 
 
 def get_picture(name):
@@ -293,8 +296,11 @@ def get_picture(name):
     headers = {
         "Authorization": 'Basic ' + b64encode("{0}:{1}".format(username, password))
     }
+    print 'after create header'
     url = "https://api.datamarket.azure.com/Bing/Search/Image?%24format=json&ImageFilters=%27Aspect%3AWide%27&Query=%27" + query + "%27&$top=1" 
+    print url
     r = requests.get(url, headers = headers)
+    print 'after request'
     image_json = json.loads(r.text)
     return image_json["d"]["results"][0]["MediaUrl"]
 

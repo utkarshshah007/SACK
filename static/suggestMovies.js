@@ -11,6 +11,7 @@ $(function(){
 	    		$(".suggested-movie").removeClass("hide");
 	    		$(".movie-slider").attr('id', data["mid"]);
 	    		$(".movie-slider").attr('genre', data["genre"]);
+	    		$(".img-responsive").attr('src',data["picture"]);
 
 	    		// Updating Stars
 	    		$(".stars").html("");
