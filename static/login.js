@@ -74,6 +74,7 @@ $(document).ready(function() {
  function testAPI() {
    console.log('Welcome!  Fetching your information.... ');
    FB.api('/me', function(response) {
+   	 JSON.stringify(response);
      console.log('Successful login for: ' + response.name);
      console.log('Email Returned: ' + response.email);
 
