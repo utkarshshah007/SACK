@@ -1,17 +1,35 @@
 $(function(){
+	$('.movie-slider').slider();
 
-	$(document).ready(function() {
-		var firstdata = {};
-		firstdata['genre'] = $('.active').text();
-		$.post("suggestions", firstdata, function (data) {
+	var load_movie = function(outdata) {
+		$.post("suggestions", outdata, function (data) {
 
 	    		$("#movieYear").text(data["year"]);
 	    		$("#movieName").text(data["title"]);
 	    		$("#movieReviews").text(data["num_ratings"] + " reviews");
 	    		$(".loading-movies").addClass("hide");
 	    		$(".suggested-movie").removeClass("hide");
+	    		$(".movie-slider").attr('id', data["mid"]);
+	    		$(".movie-slider").attr('genre', data["genre"]);
 
+	    		// Updating Stars
+	    		$(".stars").html("");
+	    		var rating = Math.round(data["avg_rating"]);
+	    		for (var i = 0; i < 5; i++) {
+	    			if (i < rating) {
+	    				$(".stars").append("<span class='glyphicon glyphicon-star'></span>");
+	    			} else {
+	    				$(".stars").append("<span class='glyphicon glyphicon-star-empty'></span>");
+	    			}	
+	    		};
+	    		$(".stars").append(" " + (Math.round(data["avg_rating"] * 100) / 100) + " stars")
 	    });
+	}
+
+	$(document).ready(function() {
+		var firstdata = {};
+		firstdata['genre'] = $('.active').text();
+		load_movie(firstdata);
 	});
 
 
@@ -24,14 +42,7 @@ $(function(){
 		var outdata = {};
 		outdata['genre'] = $(this).text();
 
-		$.post("suggestions", outdata, function (data) {
-
-    		$("#movieYear").text(data["year"]);
-    		$("#movieName").text(data["title"]);
-    		$(".loading-movies").addClass("hide");
-    		$(".suggested-movie").removeClass("hide");
-
-    	});
+		load_movie(outdata);
 	});
 
 	$("#movieName").click(function() {
@@ -47,6 +58,25 @@ $(function(){
 
 		window.location.href = url;
 
+	});
+
+	$('#rate').click(function(){
+		var outdata = {};
+		outdata['mid'] = $(this).parent().find(".movie-slider").attr('id');
+		outdata['rating'] = $(this).parent().find(".movie-slider").slider('getValue');
+		outdata['genre'] = $(this).parent().find(".movie-slider").attr('genre');
+	    $.post("suggestions/rate-movie", outdata, function (data) {
+	    	$('#' + data.genre).click();
+	    });
+	});
+
+	$('#new-suggestion').click(function(){
+		var outdata = {};
+		outdata['mid'] = $(this).parent().find(".movie-slider").attr('id');
+		outdata['genre'] = $(this).parent().find(".movie-slider").attr('genre');
+	    $.post("suggestions/get-new-suggestion", outdata, function (data) {
+	        $('#' + data.genre).click();
+	    });
 	});
 
 });

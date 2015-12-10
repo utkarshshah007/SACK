@@ -9,6 +9,9 @@ domain = "http://127.0.0.1:5000"
 curruserid = 0
 username = "d7e2536f-0268-41e3-b029-b4cb44161632"
 password = "idCjPs9d3o4fTOrKSBPOM4fj9gxz7uHAsMxYY8Bv/YU"
+to_rate = {}
+idx_rate = {}
+will_rate = set([])
 
 @app.route('/')
 def home():
@@ -85,53 +88,117 @@ def accept_genre_choices():
     connection.commit()
     return redirect(domain + "/setup-rating", code=302)
 
+
+def get_movies_to_rate(genre, num):
+    all_movies = to_rate[genre]
+    idx = idx_rate[genre]
+
+    movies = []
+    orig_idx = idx
+    temp_idx = idx
+    while idx < (orig_idx + num):
+        movie = all_movies[temp_idx]
+        if movie not in will_rate:
+            will_rate.add(movie)
+            movies.append(movie)
+            idx += 1
+        temp_idx += 1
+    idx_rate[genre] = idx
+    return movies
+
+
+@app.route('/setup-rating/get-next-movie', methods = ['POST'])
+def get_next_movie():
+    genre = request.form['genre']
+    mid, title = get_movies_to_rate(genre, 1)[0]
+    movie = {}
+    movie['mid'] = mid
+    movie['movie_title'] = title
+    return jsonify(movie)
+
+
 ''''''
 
 '''setup-rating Methods'''
 @app.route('/setup-rating')
 def ask_for_setup_ratings():
-    
+    # get all genres to rate
     query = """SELECT gname
             FROM Prefer P
             INNER JOIN Users U ON U.userid = P.userid
             WHERE U.userid = """ + str(curruserid)
+
     results = cursor.execute(query).fetchall()
     genres = [genre[0] for genre in results]
+
     movies_to_rate = []
     for genre in genres:
+        # get 50 movies/titles to rate in this genre
         query = """ SELECT M.mid, M.title
                     FROM Movies M
                     INNER JOIN PartOf P ON P.mid = M.mid
                     WHERE P.gname = \'""" + genre + """' 
                     ORDER BY M.countRatings DESC"""
         results = cursor.execute(query).fetchmany(numRows=50)
-        first_choice_movies = results[0:5]
-        backup_movies = results[5:]
+        
+        # pull out 5 movies for the user to rate
+        to_rate[genre] = results
+        idx_rate[genre] = 0
+        first_choice_movies = get_movies_to_rate(genre, 5)
+
+        # format them so that we can use it in the template
         genre_movie = {}
         genre_movie['genre'] = genre
         movies = []
-        backups = []
         for movie in first_choice_movies:
             movies.append({'id': movie[0], 'title': movie[1]})
-        for movie in backup_movies:
-            backups.append({'id': movie[0], 'title': movie[1]})
         genre_movie['movies'] = movies
-        genre_movie['backups'] = backups
         movies_to_rate.append(genre_movie)
     return render_template('setupRatingScreen.html', genres = movies_to_rate)
+
+
+''''''
+'''Insert Rating in DB. Dont forget to commit later'''
+def insert_rating(mid, rating):
+    insert = """ INSERT INTO Rate (mid, rating, userid)
+                     VALUES (""" + str(mid) + """, """ + str(rating) + """, 
+                     """ + str(curruserid) + """)"""
+    # TODO: Update average rating of movie
+    cursor.execute(insert)
+
 
 @app.route('/setup-rating', methods = ['POST'])
 def accept_setup_ratings():
     for mid in request.form.keys():
         rating = request.form.getlist(mid)[0]
-
-        insert = """ INSERT INTO Rate (mid, rating, userid)
-                     VALUES (""" + str(mid) + """, """ + str(rating) + """, 
-                     """ + str(curruserid) + """)"""
-        cursor.execute(insert)
+        insert_rating(mid, rating)
+        
     connection.commit()
-    return "/suggestions";
+    return "/suggestions"
 
+
+@app.route('/suggestions/rate-movie', methods = ['POST'])
+def rate_movie():
+    mid = request.form['mid']
+    rating = request.form['rating']
+    genre = request.form['genre']
+    
+    insert_rating(mid, rating)
+    connection.commit()
+    data = {'genre': genre}
+    return jsonify(data)
+
+
+@app.route('/suggestions/get-new-suggestion', methods = ['POST'])
+def get_new_suggestion():
+    mid = request.form['mid']
+    genre = request.form['genre']
+    insert = """ INSERT INTO Skip (userid, mid)
+                     VALUES (""" + str(curruserid) + """, """ + str(mid) + """)"""
+    cursor.execute(insert)
+    connection.commit()
+    data = {'genre': genre}
+    return jsonify(data)
 
 ''''''
 
@@ -161,37 +228,41 @@ def suggest_movies_post():
                 (SELECT userid
                 FROM rate R
                 INNER JOIN fav_movies M ON M.mid = R.mid
-                WHERE R.rating >= 3
+                WHERE R.rating = 
+                    (SELECT rating  
+                     FROM Rate 
+                     WHERE mid=M.mid 
+                     AND userid = """ + str(curruserid) + """)
                 GROUP BY userid
                 HAVING count(rating) >= 3),
             movies_not_seen AS
                 ((SELECT M.mid
                   FROM Movies M
                   INNER JOIN PartOf P ON P.mid = M.mid
-                  WHERE P.gname = '""" + genre + """')
+                  WHERE P.gname = '""" + genre + """'
+                  AND M.avgRating > 3.5)
                   MINUS
-                (SELECT M.mid
+                ((SELECT M.mid
                  FROM Movies M
                  INNER JOIN Rate R ON R.mid = M.mid
                  INNER JOIN PartOf P ON P.mid = M.mid
                  WHERE P.gname = '""" + genre + """'
-                 AND R.userid = """ + str(curruserid) + """)),
-            suggested_movies AS
-                (SELECT M.mid, avg(R.rating) AS avgRating
+                 AND R.userid = """ + str(curruserid) + """)
+                  UNION
+                 (SELECT mid
+                  FROM Skip
+                  WHERE userid = """ + str(curruserid) + """)))
+            SELECT M.mid
                 FROM movies_not_seen M
                 INNER JOIN Rate R ON R.mid = M.mid
                 INNER JOIN sim_users U ON U.userid = R.userid
-                INNER JOIN PartOf P ON P.mid = M.mid
-                WHERE P.gname = '""" + genre + """'
-                GROUP BY M.mid)
-            SELECT mid
-            FROM suggested_movies 
-            WHERE avgRating >= ALL (SELECT avgRating FROM suggested_movies)"""
+                GROUP BY M.mid
+                ORDER BY avg(R.rating) DESC"""
     start_time = time.time()
     mid = cursor.execute(query).fetchone()[0]
     end_time = time.time()
     print ("time: " + str(end_time - start_time))
-    query = """SELECT title, year, avgRating, countRatings
+    query = """SELECT title, year, avgRating, countRatings, mid
                FROM Movies 
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
@@ -212,6 +283,10 @@ def get_picture(name):
     r = requests.get(url, headers = headers)
     image_json = json.loads(r.text)
     return image_json["d"]["results"][0]["MediaUrl"]
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3], mid=result[4], genre=genre)
+
+
+
 
 ''''''
 
@@ -228,13 +303,15 @@ def dated_url_for(endpoint, **values):
             values['q'] = int(os.stat(file_path).st_mtime)
     return url_for(endpoint, **values)
 
+
+@app.before_request
 def connectToDB():
     ip = 'cis550.cfserwqjknt5.us-east-1.rds.amazonaws.com'
     port = 1521
     SID = 'ORCL'
-
+    
     dsn_tns = cx_Oracle.makedsn(ip, port, SID)
-    global connection 
+    global connection
     connection = cx_Oracle.connect('groupsack', 'sackgroup', dsn_tns)
 
     print "connection successful"
@@ -242,18 +319,19 @@ def connectToDB():
     cursor = connection.cursor()
     
 
-def closeConnection():
+@app.teardown_request
+def closeConnection(exp):
+    if exp:
+        print "There was an exception!"
+        raise exp
+
+    print "closing connection"
     cursor.close()
     connection.close()
-    print "connection closed"
 
 
 def main():
-    #app.debug = True
-    #port = int(os.environ.get("PORT", 5000))
-    connectToDB()
     app.run()
-    closeConnection()
 
 if __name__ == '__main__':
     main()
