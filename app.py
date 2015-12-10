@@ -226,7 +226,11 @@ def suggest_movies_post():
                 (SELECT userid
                 FROM rate R
                 INNER JOIN fav_movies M ON M.mid = R.mid
-                WHERE R.rating >= 4
+                WHERE R.rating = 
+                    (SELECT rating  
+                     FROM Rate 
+                     WHERE mid=M.mid 
+                     AND userid = """ + str(curruserid) + """)
                 GROUP BY userid
                 HAVING count(rating) >= 3),
             movies_not_seen AS
