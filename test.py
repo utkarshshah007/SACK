@@ -13,7 +13,7 @@ def get_picture(name):
     headers = {
         "Authorization": 'Basic ' + b64encode("{0}:{1}".format(username, password))
     }
-    url = "https://api.datamarket.azure.com/Bing/Search/Image?%24format=json&Query=%27" + query + "%27&$top=1"
+    url = "https://api.datamarket.azure.com/Bing/Search/Image?%24format=json&ImageFilters=%27Aspect%3AWide%27&Query=%27" + query + "%27&$top=1" 
     r = requests.get(url, headers = headers)
     image_json = json.loads(r.text)
     return image_json["d"]["results"][0]["MediaUrl"]
