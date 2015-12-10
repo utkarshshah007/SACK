@@ -286,7 +286,6 @@ def dated_url_for(endpoint, **values):
     return url_for(endpoint, **values)
 
 
-@app.before_request
 def connectToDB():
     ip = 'cis550.cfserwqjknt5.us-east-1.rds.amazonaws.com'
     port = 1521
@@ -299,20 +298,17 @@ def connectToDB():
     print "connection successful"
     global cursor 
     cursor = connection.cursor()
-    
 
-@app.teardown_request
-def closeConnection(exp):
-    if exp:
-        print "There was an exception!"
-        raise exp
 
+def closeConnection():
     print "closing connection"
     cursor.close()
     connection.close()
 
 def main():
+    connectToDB()
     app.run()
+    closeConnection()
 
 if __name__ == '__main__':
     main()
