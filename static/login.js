@@ -85,6 +85,7 @@ $(document).ready(function() {
 
      $.post("login", outdata, function (data) {
      	console.log("Got Here")
+     	window.location.href = data;
      });
    });
  }

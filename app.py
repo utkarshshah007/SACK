@@ -22,6 +22,12 @@ def home():
 def login():
     return render_template('test.html')
 
+def login_user(email, password):
+    query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
+    results = cursor.execute(query).fetchone()
+    global curruserid
+    curruserid = results[0]
+
 @app.route('/login', methods = ['POST'])
 def accept_login():
     email = request.form['inputEmail']
@@ -29,12 +35,20 @@ def accept_login():
     password = request.form['inputPassword']
     print password
 
-    query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
-    results = cursor.execute(query).fetchone()
-    global curruserid
-    curruserid = results[0]
+    login_user(email, password)
 
     return redirect(domain + "/suggestions", code=302)
+
+@app.route('/loginfb', methods = ['POST'])
+def fb_login():
+    email = request.form['inputEmail']
+    print email
+    password = request.form['inputPassword']
+    print password
+
+    login_user(email, password)
+
+    return "/suggestions"
 
 ''''''
 
