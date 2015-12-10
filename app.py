@@ -7,6 +7,8 @@ import time
 app = Flask(__name__)
 domain = "http://127.0.0.1:5000"
 curruserid = 0
+username = "d7e2536f-0268-41e3-b029-b4cb44161632"
+password = "idCjPs9d3o4fTOrKSBPOM4fj9gxz7uHAsMxYY8Bv/YU"
 
 @app.route('/')
 def home():
@@ -194,10 +196,22 @@ def suggest_movies_post():
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
     print result
-    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3])
+    picture = get_picture(result[0] + " movie poster")
+    print picture
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3], picture=picture)
 
 
-
+def get_picture(name):
+    print "get picture"
+    name = name.encode('ascii', 'ignore')
+    query = urllib.quote(name)
+    headers = {
+        "Authorization": 'Basic ' + b64encode("{0}:{1}".format(username, password))
+    }
+    url = "https://api.datamarket.azure.com/Bing/Search/Image?%24format=json&Query=%27" + query + "%27&$top=1"
+    r = requests.get(url, headers = headers)
+    image_json = json.loads(r.text)
+    return image_json["d"]["results"][0]["MediaUrl"]
 
 ''''''
 
@@ -232,6 +246,7 @@ def closeConnection():
     cursor.close()
     connection.close()
     print "connection closed"
+
 
 def main():
     #app.debug = True
