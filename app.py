@@ -267,9 +267,9 @@ def suggest_movies_post():
                WHERE mid = """ + str(mid)
     result = cursor.execute(query).fetchone()
     print result
-    picture = get_picture(result[0] + " movie poster")
-    print picture
-    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3], picture=picture)
+    #picture = get_picture(result[0] + " movie poster")
+    #print picture
+    return jsonify(title=result[0], year=result[1], avg_rating=result[2], num_ratings=result[3])
 
 
 def get_picture(name):
