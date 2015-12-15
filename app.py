@@ -58,7 +58,7 @@ def fb_login():
     if login_user(email, password):
         return "/suggestions"
     else:
-        redirect(url_for("registerfb"), code=307)
+        return redirect("/registerfb", code=307)
 
 
 ''''''
