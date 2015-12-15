@@ -29,6 +29,11 @@ def login_user(email, password):
     query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
     results = cursor.execute(query).fetchone()
     print "hello"
+
+    to_rate = {}
+    idx_rate = {}
+    will_rate = set([])
+
     if results:
         global curruserid
         curruserid = results[0]
@@ -75,6 +80,11 @@ def new_registration(email, password):
     curruserid = result[0] + 1
     query = """INSERT INTO USERS (email, userid) 
             VALUES (\'""" + email + """', """ + str(curruserid) + """)"""
+
+    to_rate = {}
+    idx_rate = {}
+    will_rate = set([])
+
     try:
         cursor.execute(query)
         connection.commit()

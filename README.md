@@ -4,10 +4,11 @@
  
  In order to run locally run : 
  python app.py 
+
+ Note: Facebook login features will not work locally. You must be at the EC2 instance registered to facebook.
  
  The link to the EC2 instance:
  http://ec2-52-91-3-159.compute-1.amazonaws.com/login
- 
  
  Modules:
  app.py: contains all the endpoints, the connection to the database, all the database queries and insertions
