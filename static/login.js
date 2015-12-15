@@ -79,8 +79,8 @@ $(document).ready(function() {
      console.log('Email Returned: ' + response.email);
 
      outdata = {}
-     outdata['inputEmail'] = response.email;
-     outdata['inputPassword'] = "blah";
+     outdata['email'] = response.email;
+     outdata['password'] = "blah";
 
 
      $.post("loginfb", outdata, function (data) {

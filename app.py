@@ -28,8 +28,13 @@ def login():
 def login_user(email, password):
     query = """SELECT userid FROM USERS WHERE email = \'""" + email + """'"""
     results = cursor.execute(query).fetchone()
-    global curruserid
-    curruserid = results[0]
+    print "hello"
+    if results:
+        global curruserid
+        curruserid = results[0]
+        return True
+    else:
+        return False
 
 @app.route('/login', methods = ['POST'])
 def accept_login():
@@ -38,20 +43,23 @@ def accept_login():
     password = request.form['inputPassword']
     print password
 
-    login_user(email, password)
-
-    return redirect(domain + "/suggestions", code=302)
+    if login_user(email, password):
+        return redirect(domain + "/suggestions", code=302)
+    else:
+        return redirect(url_for("register"), code=303)
 
 @app.route('/loginfb', methods = ['POST'])
 def fb_login():
-    email = request.form['inputEmail']
+    email = request.form['email']
     print email
-    password = request.form['inputPassword']
+    password = request.form['password']
     print password
 
-    login_user(email, password)
+    if login_user(email, password):
+        return "/suggestions"
+    else:
+        redirect(url_for("registerfb"), code=307)
 
-    return "/suggestions"
 
 ''''''
 
@@ -60,13 +68,7 @@ def fb_login():
 def register():
     return render_template('registerPage.html')
 
-@app.route('/register', methods = ['POST'])
-def accept_registration():
-    email = request.form['email']
-    print email
-    password = request.form['password']
-    print password
-
+def new_registration(email, password):
     query = """SELECT MAX(userid) FROM USERS"""
     result = cursor.execute(query).fetchone()
     global curruserid
@@ -79,8 +81,34 @@ def accept_registration():
         print "new user created"
     except cx_Oracle.IntegrityError:
         error = "Please use a different email. That email has already been registered."
+        return error
+        
+
+@app.route('/register', methods = ['POST'])
+def accept_registration():
+    email = request.form['email']
+    print email
+    password = request.form['password']
+    print password
+
+    error = new_registration(email, password)
+    if error:
         return render_template('registerPage.html', error = error)
+
     return redirect(domain + "/choose-genres", code=302)
+
+@app.route('/registerfb', methods = ['POST'])
+def accept_fb_registration():
+    email = request.form['email']
+    print email
+    password = request.form['password']
+    print password
+
+    error = new_registration(email, password)
+    if error:
+        return "/register"
+    
+    return "/choose-genres"
 
 ''''''
 
